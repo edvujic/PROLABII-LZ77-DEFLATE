@@ -1,0 +1,60 @@
+# depslib dependency file v1.0
+1586176568 source:/home/hilal/Code::Blocks/proje2/main.c
+	<stdio.h>
+	<stdlib.h>
+	<stdint.h>
+
+1586269794 source:/home/edmond/Downloads/proje2/main.c
+	<stdio.h>
+	<stdlib.h>
+	<stdint.h>
+	<string.h>
+
+1586347899 source:/home/hilal/Code::Blocks/proje2compress/main.c
+	<stdio.h>
+	<stdlib.h>
+	<stdint.h>
+	<string.h>
+
+1588334761 source:/home/edmond/Downloads/proje2compress/main.c
+	<stdio.h>
+	<stdlib.h>
+	<stdint.h>
+	<string.h>
+	<ctype.h>
+
+1588412132 source:/home/hilal/Code::Blocks/proje2compress1/main.c
+	<stdio.h>
+	<stdlib.h>
+	<stdint.h>
+	<string.h>
+	<ctype.h>
+
+1588505722 source:/home/edmond/Downloads/proje2compress4/proje2compress1/main.c
+	<stdio.h>
+	<stdlib.h>
+	<stdint.h>
+	<string.h>
+	<ctype.h>
+
+1588552519 source:c:\users\chrom\downloads\mayis3-lz77deflate\proje2compress1\main.c
+	<stdio.h>
+	<stdlib.h>
+	<stdint.h>
+	<string.h>
+	<ctype.h>
+
+1589377174 source:c:\users\chrom\downloads\mayis3-lz77deflate\mayis4-deflatelz77\main.c
+	<stdio.h>
+	<stdlib.h>
+	<stdint.h>
+	<string.h>
+	<ctype.h>
+
+1589587630 source:c:\users\chrom\downloads\mayis3-lz77deflate\mayis13-sonhali\main.c
+	<stdio.h>
+	<stdlib.h>
+	<stdint.h>
+	<string.h>
+	<ctype.h>
+
