@@ -174,7 +174,8 @@ int karakter_sayisi(FILE *f)
 }
 char *dosya_oku(FILE *f,int *uzunluk)
 {
-    //dosya okunuyor
+    //the file is being read line by line
+    //dosya satir satir okunuyor
     char *icerik;
     fseek(f,0,SEEK_END);
     *uzunluk = ftell(f);
@@ -186,7 +187,7 @@ char *dosya_oku(FILE *f,int *uzunluk)
 int kaydirma_uzunlugu(int a, int b)
 {
     //kaydırma uzunluğu belirtiliyor.
-    //getting the 
+    //getting the offset
     return (a << uzunluk_bit | b );
 }
 int eslesme_uzunlugu(char *string1, char *string2, int limit)
@@ -219,6 +220,8 @@ struct belirtec *lz77kodlanmis(char *metin, int limit, int *belirtec_say, FILE *
         {
             arama_tampon = metin;
         }
+        //finding the lenght of the found comparison
+        //eslesmenin boyutu belirlenir
 
         int eslesme_boyutu = 0 ;
         char *eslesme = ileri_tampon;
@@ -240,12 +243,15 @@ struct belirtec *lz77kodlanmis(char *metin, int limit, int *belirtec_say, FILE *
         if(ileri_tampon + eslesme_boyutu >= metin + limit)
         {
 
-            eslesme_boyutu = metin + limit-ileri_tampon-1; //eğer eşleşmenin son karekteri de dahil ise eşletmeyi kısalt.
+            eslesme_boyutu = metin + limit-ileri_tampon-1; 
+            //eğer eşleşmenin son karekteri de dahil ise eşletmeyi kısalt.
+            //if last character is in the found matchup, cut the matchup
         }
         char benzetme[10];
         if((ileri_tampon-eslesme)!=0)
         {
             //eğer eşlesme bulunduysa pointer oluşturuluyor.
+            //pointer for the found matchup
             sprintf(benzetme, " <%d,%d,%c> ", ileri_tampon-eslesme, eslesme_boyutu, ileri_tampon[eslesme_boyutu]);
             strcat(lz77_cumlesi,benzetme);
             q_lz77=strlen(lz77_cumlesi);
@@ -258,12 +264,14 @@ struct belirtec *lz77kodlanmis(char *metin, int limit, int *belirtec_say, FILE *
             //sprintf(benzetme, "(0, %c)", ileri_tampon[0]);
 
             //eğer eşleşme bulunmadıysa karakter olduğu gibi kalıyor.
+            //in matchup not found, leave it
             lz77_cumlesi[q_lz77]=ileri_tampon[0];
             q_lz77++;
 
         }
 
-        // ileri_tampon[strlen(ileri_tampon)]='\n';
+        //printing out the buffers
+        //tamponlar yazdirlir
         printf("[ILERI TAMPON]: %s", ileri_tampon);
         b.kay_miktar = kaydirma_uzunlugu(ileri_tampon-eslesme, eslesme_boyutu);
         printf("\n[BULUNAN BENZETME]: <%d,%d,[%c]>\n\n",ileri_tampon-eslesme, eslesme_boyutu, ileri_tampon[eslesme_boyutu]);
@@ -271,6 +279,7 @@ struct belirtec *lz77kodlanmis(char *metin, int limit, int *belirtec_say, FILE *
 
         ileri_tampon += eslesme_boyutu;
         //eşleşme boyutuna göre ileri tamponundan arama tamponuna karakter aktarımı yapılır.
+        //transfer of characters according to the buffers and the length of the matchup
         b.c = *ileri_tampon;
         i_kaydirma++;
 
@@ -287,13 +296,14 @@ struct belirtec *lz77kodlanmis(char *metin, int limit, int *belirtec_say, FILE *
         *belirtec_say = bel_say;
     }
 
-    //printf("LZ77_cumlesi: %s\n",lz77_cumlesi);
+    
     return kodla;
 }
 
 void frekanslar(char *str, FILE *f)
 {
     //huffman kodlamayı gerçekleştirmek için ilk önce lzss metoduyla şifrelenen bloğun karakter frekansı bulunuyor.
+    //find frequencies of lzss blocks.
     int sayac=0;
     int i;
     int frek[256] = {0};
@@ -312,6 +322,7 @@ void frekanslar(char *str, FILE *f)
 
     int frekans[sayac];
     char arr[sayac];
+    //parse character and freqs into arrays.
     //karakter ve frekansları array'lere atılıyor.
     int j=0;
     for(i = 0; i < 256; i++)
@@ -325,6 +336,7 @@ void frekanslar(char *str, FILE *f)
         }
     }
     //karakter ve frekansları huffmanı çalıştırmak üzere kodlamaya gönderiliyor.
+    //send to huffman codding
     huffmani_calistir(arr, frekans, sayac, str, f);
 
 }
@@ -344,6 +356,7 @@ void dosya_deflate(FILE *f)
 
     int blok_uzunlugu = 32 ;
     //BLOK UZUNLUĞU DEĞİŞTİRMEK İÇİN BURADA!
+    //to change the block size
     char string[blok_uzunlugu];
     char buf[blok_uzunlugu];
     int r = 0 ;
@@ -353,7 +366,7 @@ void dosya_deflate(FILE *f)
 
 
     fprintf(f, "-----------DEFLATE METODUN SIFRELENMESI -----------\n");
-    //fprintf(f, "\n%d. blogun LZSS hali ", sayac+1);
+
     while(fgets(string, blok_uzunlugu, fp)!=NULL)
     {
 
@@ -366,14 +379,21 @@ void dosya_deflate(FILE *f)
     }
     fprintf(f,"DEFLATE'den sonra boyut: %d byte\n", deflate_toplam/8);
     //DEFLATE metodunun sıkıştırma oranı belirtiliyor.
+    //finding DEFLATE data compression rate
     fclose(f);
 }
 
 void lzsskodlanmis(char *metin, int limit, int *belirtec_say, FILE *f)
 {
+    //works pretty much the same as LZ77 but it doesn't get the last character in the matchup and pointer.
+    //neredeyse LZ77 gibi calisiyor, tek farki LZ77'de eslesmenin son karakteri aliniyor LZSS'de o soz konusu degil.
     int bel_say = 0 ;
-    int kapasite = 1 << 3 ; //1 sayisini 3 bit sola kaydır
-    belirt b; // Belirteç oluşturuyoruz.
+    int kapasite = 1 << 3 ; 
+    //1 sayisini 3 bit sola kaydır
+    //shift number 1 3 times to the left
+    belirt b; 
+    // Belirteç oluşturuyoruz.
+    // make token
     char *ileri_tampon;
     char *arama_tampon;
     int lzss_boyut;
@@ -402,6 +422,8 @@ void lzsskodlanmis(char *metin, int limit, int *belirtec_say, FILE *f)
             {
 
                 eslesme_boyutu = uzunluk-1;
+                //the only thing changed from LZ77
+                //tek degisime ugrayan satir LZ77'den
                 eslesme = arama_tampon;
 
             }
@@ -424,6 +446,7 @@ void lzsskodlanmis(char *metin, int limit, int *belirtec_say, FILE *f)
             q_lzss=strlen(lzss_cumlesi);
             lzss_boyut++;
             //pointerler oluşturuluyor.
+            //make the pointers
 
         }
 
@@ -464,8 +487,10 @@ void lzsskodlanmis(char *metin, int limit, int *belirtec_say, FILE *f)
     fseek(f, 0, SEEK_END);
     frekanslar(lzss_cumlesi,f);
     //huffmana göndermek için bloğun lzss hali gönderiliyor.
+    //send blocks of LZSS compressed data to Huffman
     memset(lzss_cumlesi,0,sizeof(lzss_cumlesi));
     //LZSS'nin sifrelenmesinden sonra boşaltma işlemi.
+    //after compression of the block is done, blocks are 0
     q_lzss=0;
     printf("\n");
 }
@@ -585,6 +610,7 @@ void atama(char harf[], char kod[], int harf_sayisi)
     //harf ve kodları array'lere atılıyor.
 }
 //huffman cümlesinin yazdırılıması.
+//printing of huffman sentence
 void cumle_yaz(FILE *f)
 {
     for(int j=0; j<h; j++)
