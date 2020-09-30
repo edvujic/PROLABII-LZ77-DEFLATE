@@ -3,6 +3,9 @@
 #include <stdint.h>
 #include <string.h>
 #include <ctype.h>
+//including the necessary libraries used in this project.
+//gerekli olan kutuphaneleri eklenir.
+
 void dosya_deflate(FILE *f);
 char *dosya_oku(FILE *f,int *uzunluk);
 int eslesme_uzunlugu(char *string1, char *string2, int limit);
@@ -11,29 +14,37 @@ int kaydirma_uzunlugu(int a, int b);
 struct belirtec *lz77kodlanmis(char *metin, int limit, int *belirtec_say, FILE *f);
 void lzsskodlanmis(char *metin, int limit, int *belirtec_say, FILE *f);
 void huffmani_calistir(char harfler[], int frekanslari[], int n, char orijinal_cumle[], FILE *f);
+//declaring the function prototypes that are going to be used in this project.
+//kullanilacak fonksiyonlarin prototipi tanimlaniyor.
 
+//defining the tokens that are going to be used to execute the LZ77 and LZSS compression.
+//LZ77 ve LZSS veri sıkıştırma icin kullanilan belireclerin struct'in tanimlanmasi.
 struct belirtec
 {
-    uint8_t kay_miktar; //isaretsiz 8 bit uzunluğundaki bir integer
+    uint8_t kay_miktar; 
+    //unsigned 8 bit integer.
+    //isaretsiz 8 bit uzunluğundaki bir integer
     char c;
 } typedef belirt;
 
+//defining a node struct used to execute the HUFFMAN encoding.
+//huffman kodlamayi gerceklestirmek icin dugum struct'in tanimlanmasi.
 struct dugum
 {
-    char harf;
-    int frekansi;
-    struct dugum *sol;
-    struct dugum *sag;
+    char harf; //stands for letter
+    int frekansi; //stands for frequency
+    struct dugum *sol; //stands for left
+    struct dugum *sag; //stands for right
 } typedef dugum;
 
-dugum * yigin[100]; //yigin tanimlama
-int yigin_size=0; //yigin buyuklugu
+//defining a queue for HUFFMAN.
+//HUFFMAN'da kullanilacak yigini tanimlanma.
+dugum * yigin[100];
+
+//size of the queue
+int yigin_size=0;
 
 
-//int n[100];
-//int g = 0 ;
-
-//char harfler[100][100];
 int y = 0 ;
 int kaydirma_bit;
 int max_kaydirma_bit;
@@ -41,10 +52,20 @@ int uzunluk_bit;
 int max_uzunluk_bit;
 int deflate_toplam=0;
 int deflate_toplam_byte;
-char lzss_cumlesi[2000]; //LZ77 cümlesi oluşturma (LZ77)
-char lz77_cumlesi[2000]; //LZSS cümlesi oluşturma (DEFLATE)
-int q_lzss=0; //lzss cümlesini oluşturmak için kullanılan sayaç
-int q_lz77=0; //lzss cümlesini oluşturmak için kullanılan sayaç
+char lzss_cumlesi[2000]; 
+//LZ77 cümlesi oluşturma (LZ77)
+//used to store the LZ77 compression.
+char lz77_cumlesi[2000]; 
+//LZSS cümlesi oluşturma (DEFLATE)
+//used to store the LZSS compression.
+
+int q_lzss=0;
+//lzss cümlesini oluşturmak için kullanılan sayaç
+//number of tokens fro the lzss compression.
+int q_lz77=0; 
+//lzss cümlesini oluşturmak için kullanılan sayaç
+//number for tokens for the lz77 compressıon
+
 //aşağıdaki LZ77 ve LZSS kod parçaları https://ysar.net/algoritma/lz77.html sitesinden uyarlanmıştır.
 //aşağıdaki Huffman Kodlama parçaları https://www.thedailyprogrammer.com/2015/03/huffman-encoding.html sitesinden uyarlanmıştır.
 int main()
@@ -55,32 +76,53 @@ int main()
     max_kaydirma_bit = ((1 << kaydirma_bit) -1);
     uzunluk_bit = (8 - kaydirma_bit);
     max_uzunluk_bit = (1 << uzunluk_bit) -1;
+    
+    //used to find the size of the files after compression.
+    //veri sıkıştırdıktan sonraki boyutu bulmak icin
     int boyut_lz77=0, boyut_lzss=0;
+    
     FILE *f;
     char *kaynak_metin;
     int metin_boyutu = 8 ;
-    if(f = fopen("kaynak.txt","rb")) //kaynak.txt metni okuma modunda açılıyor.
+    
+    //kaynak.txt metni okuma modunda açılıyor.
+    //opening the source.txt in reading mode.
+    if(f = fopen("kaynak.txt","rb")) 
     {
         kaynak_metin = dosya_oku(f,&metin_boyutu);
         fclose(f);
     }
     kaynak_metin[karakter_sayisi(f)]='\0';
-    int bel_sayisi_lz77; //lz77 ve lzss şifrelenme modların belirteç sayacı oluşturma.
+    
+    //lz77 ve lzss şifrelenme modların belirteç sayacı oluşturma.
+    //the number of tokens used for both LZSS and LZ77
+    int bel_sayisi_lz77; 
     int bel_sayisi_lzss;
-    belirt *kodlanmis_lz77 = lz77kodlanmis(kaynak_metin,metin_boyutu,&bel_sayisi_lz77, f); // LZ77 kodlanmaya gönderiliyor.
-    //belirt *kodlanmis_lzss = lzsskodlanmis(kaynak_metin, metin_boyutu, &bel_sayisi_lzss);
-
-    f=fopen("LZ77sonuc.txt", "w"); //sonuc dosyası açılıyor.
+    
+    // LZ77 kodlanmaya gönderiliyor.
+    // data is about to be compressed using LZ77 encoder.
+    belirt *kodlanmis_lz77 = lz77kodlanmis(kaynak_metin,metin_boyutu,&bel_sayisi_lz77, f); 
+   
+    //sonuc dosyası açılıyor.
+    //creating the file in which the compressed data is gonna be stored
+    f=fopen("LZ77sonuc.txt", "w"); 
     printf("\nLZ77 metoduyla kodlandiktan sonra: ");
+    
+    //printing out the data without pointers
+    //pointersiz veri yazdirma
     fputs("-----------LZ77 METODUNUN SIFRELENMESI-----------\n\nVERI [POINTERSIZ]: ", f);
     for(int i = 0 ; i < bel_sayisi_lz77; i++)
     {
-        //printf("%c",kodlanmis_lz77[i].c);
+        //printf("%c",kodlanmis_lz77[i].c); //to print in console
         boyut_lz77+=sizeof(kodlanmis_lz77[i].c);
         fputc(kodlanmis_lz77[i].c, f);
+        //writing it in the file
+        //dosyaya yazdirma
     }
     fputs("\n", f);
-    // printf("\n");
+    
+    //printing out the information about the compressed file
+    //sıkıştırlımış veri hakkında bilgiler
     printf("%s\n", lz77_cumlesi);
     fprintf(f, "VERI [POINTERLI]: %s\n", lz77_cumlesi);
     printf("--- NORMAL BOYUT %d, SIFRLENDIKTEN SONRAKI: %d ---\n\n", metin_boyutu, boyut_lz77);
@@ -88,9 +130,13 @@ int main()
     fseek(f, 0, SEEK_END); //sonuç dosyasının sona metin eklemek için yazdırılan kısmının sonuna gidiliyor.
 
 
-    dosya_deflate(f);  //deflate şifrelenmesine gönderiliyor.
+    dosya_deflate(f); 
+    //deflate şifrelenmesine gönderiliyor.
+    //data is about to be compressed with huffman to reach deflate algorithm.
+    
     deflate_toplam_byte=deflate_toplam/8;
     //karşılaştırma yapılır.
+    //comparing LZ77 and DEFLATE
     if(boyut_lz77 > deflate_toplam_byte)
     {
         printf("\n\nMETININ LZ77 ILE SIFRELENMIS BOYUTU: %d\n",boyut_lz77);
@@ -117,6 +163,7 @@ void devam()
 int karakter_sayisi(FILE *f)
 {
     //dosyanın her karakteri okunur ve karakter sayısı bulunur.
+    //source.txt's characters are found alongside with their frequencies.
     f=fopen("kaynak.txt", "r");
     int count=0;
     char c;
@@ -139,11 +186,13 @@ char *dosya_oku(FILE *f,int *uzunluk)
 int kaydirma_uzunlugu(int a, int b)
 {
     //kaydırma uzunluğu belirtiliyor.
+    //getting the 
     return (a << uzunluk_bit | b );
 }
 int eslesme_uzunlugu(char *string1, char *string2, int limit)
 {
     //lz77 modunda arama tamponunda bulunan benzetmenin uzunluğunu bulunuyor.
+    //getting the length of the found comparison.
     int uzunluk;
     for(uzunluk = 0 ; *string1++ == *string2++ && uzunluk < limit ; uzunluk++);
     return uzunluk;
@@ -151,7 +200,8 @@ int eslesme_uzunlugu(char *string1, char *string2, int limit)
 struct belirtec *lz77kodlanmis(char *metin, int limit, int *belirtec_say, FILE *f)
 {
     int bel_say = 0 ;
-    int kapasite = 1 << 3 ; //1 sayisini 3 bit sola kaydır
+    int kapasite = 1 << 3 ; 
+    //1 sayisini 3 bit sola kaydır
     belirt b; // Belirteç oluşturuyoruz.
     char *ileri_tampon;
     char *arama_tampon;
